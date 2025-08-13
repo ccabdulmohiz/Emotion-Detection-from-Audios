@@ -1,0 +1,11 @@
+google-generativeai
+tabulate
+google-auth
+python-dotenv
+librosa
+soundfile
+torch
+pyannote.audio
+openai
+whisper
+vertexai

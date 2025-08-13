@@ -64,10 +64,8 @@ HF_TOKEN = os.getenv("HF_TOKEN")
 if not HF_TOKEN:
     raise ValueError("HF_TOKEN not found in .env file!")
 
-def preprocess_audio(input_file):
-    # input_file is a file-like object
-    input_file.seek(0)
-    audio_data, sr = librosa.load(input_file, sr=16000, mono=True)
+def preprocess_audio(input_path):
+    audio_data, sr = librosa.load(input_path, sr=16000, mono=True)
     tmp_wav = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
     sf.write(tmp_wav.name, audio_data, 16000)
     return tmp_wav.name
@@ -127,19 +125,13 @@ def save_transcripts(audio_path, transcript, corrected_text):
         f.write(corrected_text)
     print(f"[INFO] Corrected transcript saved to {corrected_path}")
 
-    # Save as JSON
-    json_path = os.path.join(output_dir, f"{base_name}_transcript.json")
-    with open(json_path, "w") as f:
-        json.dump({"audio_file": audio_path, "transcript": transcript, "corrected": corrected_text}, f, indent=2)
-    print(f"[INFO] Transcript JSON saved to {json_path}")
-
-def process_audio_file(audio_file_obj, correction_prompt):
+def process_audio_file(audio_path, correction_prompt):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"[INFO] Using device: {device}")
 
     try:
         print("[INFO] Preprocessing audio for diarization...")
-        processed_path = preprocess_audio(audio_file_obj)
+        processed_path = preprocess_audio(audio_path)
 
         print("[INFO] Loading speaker diarization model...")
         diarization = Pipeline.from_pretrained(
@@ -148,7 +140,7 @@ def process_audio_file(audio_file_obj, correction_prompt):
         )
         diarization.to(torch.device(device))
 
-        print(f"[INFO] Performing diarization on {os.path.basename(processed_path)}...")
+        print(f"[INFO] Performing diarization on {os.path.basename(audio_path)}...")
         diarization_results = diarization(processed_path)
 
         audio_data, sr = librosa.load(processed_path, sr=16000)
@@ -203,7 +195,7 @@ def process_audio_file(audio_file_obj, correction_prompt):
         print(summary)
 
         # Save transcripts
-        save_transcripts(processed_path, transcript, corrected_text)
+        save_transcripts(audio_path, transcript, corrected_text)
 
         return transcript, corrected_text, summary
 
@@ -211,12 +203,8 @@ def process_audio_file(audio_file_obj, correction_prompt):
         print(f"[ERROR] {e}")
         traceback.print_exc()
         return None, None, None
-import fileinput
-if __name__ == "__main__":
-    audio = fileinput.input('Audio file')
-    
-    with open(audio, "rb") as audio_file:
-        process_audio_file(audio_file, prompt)
 
-            
+if __name__ == "__main__":
+    manual_audio_path = "Test Audio/Call 5 1 2.opus"
+    process_audio_file(manual_audio_path, prompt)
 
