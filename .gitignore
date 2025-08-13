@@ -1,0 +1,8 @@
+Speakers/
+Test Audio/
+venv/
+.env
+Transcripts/
+call_analysis_results.csv
+call_analysis.csv
+aiml-365220-b6aec5dba4a21.json
