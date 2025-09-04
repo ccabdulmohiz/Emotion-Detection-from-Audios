@@ -1,11 +1,6 @@
-google-generativeai
-tabulate
-google-auth
-python-dotenv
-librosa
-soundfile
-torch
-pyannote.audio
-openai
-whisper
-vertexai
+pandas
+numpy
+PyPDF2
+pdfplumber
+matplotlib
+seaborn
